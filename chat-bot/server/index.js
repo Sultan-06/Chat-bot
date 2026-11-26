@@ -9,11 +9,31 @@ import { getSystemPrompt, VALID_DOMAIN_IDS } from './prompts.js'
 
 // ─── Configuration ───────────────────────────────────────────────
 const PORT = process.env.PORT || 3000
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173,https://Sultan-06.github.io'
 const AI_PROVIDER = process.env.AI_PROVIDER || 'groq'
 const AI_API_KEY = process.env.AI_API_KEY || ''
 const AI_BASE_URL = process.env.AI_BASE_URL || 'https://api.groq.com/openai/v1'
 const AI_MODEL = process.env.AI_MODEL || 'openai/gpt-oss-120b'
+
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'https://sultan-06.github.io',
+]
+
+function normalizeOrigin(value) {
+  const trimmed = (value || '').trim()
+  if (!trimmed) return ''
+  try {
+    return new URL(trimmed).origin.toLowerCase()
+  } catch {
+    return trimmed.replace(/\/+$/, '').toLowerCase()
+  }
+}
+
+const allowedOrigins = new Set([
+  ...DEFAULT_ALLOWED_ORIGINS,
+  ...FRONTEND_URL.split(',').map(normalizeOrigin).filter(Boolean),
+])
 
 // ─── OpenAI client ───────────────────────────────────────────────
 const openai = new OpenAI({
@@ -28,22 +48,32 @@ const openai = new OpenAI({
 // ─── App setup ───────────────────────────────────────────────────
 const app = express()
 
-// Security headers
-app.use(helmet())
+// Trust Render / reverse-proxy headers (needed for express-rate-limit)
+app.set('trust proxy', 1)
 
-// CORS — support comma-separated origins
-const allowedOrigins = FRONTEND_URL.split(',').map((o) => o.trim())
+// Security headers (allow cross-origin API consumption)
 app.use(
-  cors({
-    origin: (origin, cb) => {
-      // Allow requests with no origin (Postman, curl) and listed origins
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true)
-      cb(new Error(`CORS: origin ${origin} not allowed`))
-    },
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 )
+
+// CORS — allow local dev, GitHub Pages origin, and comma-separated FRONTEND_URL origins
+const corsOptions = {
+  origin: (origin, cb) => {
+    // Allow requests with no origin (direct browser visits, curl, health checks) and allowed origins
+    if (!origin || allowedOrigins.has(normalizeOrigin(origin))) {
+      return cb(null, true)
+    }
+    return cb(null, false)
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+}
+
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
 
 // Body parsing with size limit
 app.use(express.json({ limit: '100kb' }))
@@ -57,9 +87,13 @@ const chatLimiter = rateLimit({
   message: { error: 'Too many requests. Please wait a moment and try again.' },
 })
 
-// ─── Health endpoint ──────────────────────────────────────────────
+// ─── Health endpoints ─────────────────────────────────────────────
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
 app.get('/api/health', (_req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'ok',
     provider: AI_PROVIDER,
     model: AI_MODEL,
@@ -194,10 +228,10 @@ app.use((err, _req, res, _next) => {
 })
 
 // ─── Start server ─────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🌟 Aura AI Server running on http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🌟 Aura AI Server running on http://0.0.0.0:${PORT}`)
   console.log(`   Provider : ${AI_PROVIDER}`)
   console.log(`   Model    : ${AI_MODEL}`)
   console.log(`   API Key  : ${AI_API_KEY ? '✓ Configured' : '✗ Missing — add to server/.env'}`)
-  console.log(`   CORS     : ${FRONTEND_URL}\n`)
+  console.log(`   CORS     : ${[...allowedOrigins].join(', ')}\n`)
 })

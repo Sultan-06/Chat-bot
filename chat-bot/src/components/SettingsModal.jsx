@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { X, Sun, Moon, Mic, Info, Loader2 } from 'lucide-react'
 import { LANGUAGES } from '../utils/languages'
 import { DOMAINS } from '../utils/domains'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { API_BASE_URL } from '../config/api'
 
 export default function SettingsModal({
   open,
@@ -24,7 +23,7 @@ export default function SettingsModal({
     let cancelled = false
     const controller = new AbortController()
     // Use setState inside async callback (not synchronously in the effect)
-    fetch(`${API_BASE}/api/health`, { signal: controller.signal })
+    fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => { if (!cancelled) setHealth(d) })
       .catch(() => { if (!cancelled) setHealth(null) })
@@ -214,7 +213,7 @@ export default function SettingsModal({
                 <Info size={14} className="mt-0.5 flex-shrink-0" />
                 <span>
                   Cannot reach backend. Make sure the server is running on{' '}
-                  <code className="font-mono">{API_BASE}</code>.
+                  <code className="font-mono">{API_BASE_URL}</code>.
                 </span>
               </div>
             )}

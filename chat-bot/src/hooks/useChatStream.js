@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { API_BASE_URL } from '../config/api'
 
 export function useChatStream({ onToken, onDone, onError }) {
   const [isStreaming, setIsStreaming] = useState(false)
@@ -15,7 +14,7 @@ export function useChatStream({ onToken, onDone, onError }) {
       abortRef.current = controller
 
       try {
-        const res = await fetch(`${API_BASE}/api/chat`, {
+        const res = await fetch(`${API_BASE_URL}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages, domainId, languageCode }),

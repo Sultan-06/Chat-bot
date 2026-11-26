@@ -9,7 +9,7 @@ build/
 # Environment files (never commit secrets)
 .env
 .env.local
-.env.production
+.env.*.local
 server/.env
 
 # Editor
