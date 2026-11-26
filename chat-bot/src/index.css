@@ -1,0 +1,209 @@
+@import "tailwindcss";
+@import "highlight.js/styles/github.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-bg-main: #FCFBF8;
+  --color-bg-sidebar: #F7F5F0;
+  --color-bubble-user: #EFECE4;
+  --color-bubble-ai: #FFFFFF;
+  --color-bubble-ai-secondary: #FAF9F5;
+  --color-border-ai: #E6E2D8;
+  --color-text-primary: #1E1D1B;
+  --color-text-secondary: #6E6A63;
+  --color-divider: #E8E4DA;
+
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Light mode base */
+:root {
+  color-scheme: light;
+}
+
+/* Dark mode base */
+.dark {
+  color-scheme: dark;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1cdc4;
+  border-radius: 2px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3a3732;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Code block base */
+pre {
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* RTL support for Arabic */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Textarea auto-resize */
+textarea {
+  resize: none;
+  overflow: hidden;
+  field-sizing: content;
+  min-height: 1.5rem;
+  max-height: 10rem;
+}
+
+/* Recording pulse animation */
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 1; }
+  70% { transform: scale(1.05); opacity: 0.5; }
+  100% { transform: scale(0.95); opacity: 1; }
+}
+
+.recording-pulse {
+  animation: pulse-ring 1.2s ease-in-out infinite;
+}
+
+/* Typing dots animation */
+@keyframes typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.typing-dot:nth-child(1) { animation: typing-dot 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation: typing-dot 1.2s ease-in-out 0.2s infinite; }
+.typing-dot:nth-child(3) { animation: typing-dot 1.2s ease-in-out 0.4s infinite; }
+
+/* Dark mode highlight.js override */
+.dark .hljs {
+  background: #1e1e1e;
+  color: #d4d4d4;
+}
+
+/* Markdown prose styles */
+.prose-ai h1, .prose-ai h2, .prose-ai h3, .prose-ai h4 {
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+.prose-ai h1 { font-size: 1.25rem; }
+.prose-ai h2 { font-size: 1.1rem; }
+.prose-ai h3 { font-size: 1rem; }
+
+.prose-ai p {
+  margin-bottom: 0.75rem;
+}
+.prose-ai p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-ai ul, .prose-ai ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.prose-ai li {
+  margin-bottom: 0.25rem;
+}
+
+.prose-ai blockquote {
+  border-left: 3px solid #E8E4DA;
+  padding-left: 1rem;
+  color: #6E6A63;
+  font-style: italic;
+  margin: 0.75rem 0;
+}
+.dark .prose-ai blockquote {
+  border-left-color: #3a3732;
+  color: #9b9690;
+}
+
+.prose-ai code:not(pre code) {
+  background: #EFECE4;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+}
+.dark .prose-ai code:not(pre code) {
+  background: #2a2825;
+}
+
+.prose-ai pre {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0.75rem 0;
+}
+
+.prose-ai table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+.prose-ai th, .prose-ai td {
+  border: 1px solid #E8E4DA;
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+}
+.dark .prose-ai th, .dark .prose-ai td {
+  border-color: #3a3732;
+}
+.prose-ai th {
+  background: #F7F5F0;
+  font-weight: 600;
+}
+.dark .prose-ai th {
+  background: #2a2825;
+}
+
+.prose-ai strong { font-weight: 600; }
+.prose-ai em { font-style: italic; }
+
+.prose-ai a {
+  color: #6E6A63;
+  text-decoration: underline;
+}
+.prose-ai a:hover {
+  color: #1E1D1B;
+}
+.dark .prose-ai a {
+  color: #9b9690;
+}
+.dark .prose-ai a:hover {
+  color: #e8e4da;
+}
