@@ -211,8 +211,6 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <Header
-          sidebarCollapsed={sidebarCollapsed}
-          onOpenSidebar={() => setSidebarCollapsed(false)}
           onMobileSidebarOpen={() => setMobileSidebarOpen(true)}
           onExport={handleExport}
           domainId={domainId}
