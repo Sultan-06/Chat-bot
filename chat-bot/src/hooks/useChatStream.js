@@ -6,7 +6,7 @@ export function useChatStream({ onToken, onDone, onError }) {
   const abortRef = useRef(null)
 
   const send = useCallback(
-    async ({ messages, domainId, languageCode }) => {
+    async ({ messages, domainId, languageCode, memoryContext }) => {
       if (isStreaming) return
       setIsStreaming(true)
 
@@ -17,7 +17,7 @@ export function useChatStream({ onToken, onDone, onError }) {
         const res = await fetch(`${API_BASE_URL}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages, domainId, languageCode }),
+          body: JSON.stringify({ messages, domainId, languageCode, memoryContext }),
           signal: controller.signal,
         })
 
@@ -85,7 +85,6 @@ export function useChatStream({ onToken, onDone, onError }) {
     },
     [isStreaming, onToken, onDone, onError]
   )
-
   const stop = useCallback(() => {
     abortRef.current?.abort()
   }, [])

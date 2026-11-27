@@ -10,6 +10,7 @@ import { useChatStream } from './hooks/useChatStream'
 import { exportTranscript } from './utils/exportTranscript'
 import { getLanguageByCode } from './utils/languages'
 import { getDomainById } from './utils/domains'
+import { buildMemoryContext } from './utils/memory'
 
 // Persist helpers
 function loadPref(key, fallback) {
@@ -133,12 +134,16 @@ export default function App() {
       .slice(-30)
       .map((m) => ({ role: m.role, content: m.content }))
 
+    // Build cross-chat memory from previous sessions
+    const memoryContext = buildMemoryContext(sessions, activeId)
+
     await send({
       messages: apiMessages,
       domainId,
       languageCode,
+      memoryContext,
     })
-  }, [isStreaming, activeId, activeSession, addMessage, send, domainId, languageCode])
+  }, [isStreaming, activeId, activeSession, sessions, addMessage, send, domainId, languageCode])
 
   const handleStop = useCallback(() => {
     stop()

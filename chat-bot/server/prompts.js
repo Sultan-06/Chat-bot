@@ -66,10 +66,33 @@ Guidelines:
 
 const VALID_DOMAIN_IDS = Object.keys(PROMPTS)
 
-export function getSystemPrompt(domainId, languageCode) {
+/**
+ * Build the full system prompt, optionally injecting cross-chat memory context.
+ * @param {string} domainId
+ * @param {string} languageCode
+ * @param {string|null} memoryContext - Compact history from previous sessions
+ */
+export function getSystemPrompt(domainId, languageCode, memoryContext) {
   const id = VALID_DOMAIN_IDS.includes(domainId) ? domainId : 'general'
-  const promptFn = PROMPTS[id]
-  return promptFn(languageCode || 'en')
+  const basePrompt = PROMPTS[id](languageCode || 'en')
+
+  if (!memoryContext || typeof memoryContext !== 'string' || !memoryContext.trim()) {
+    return basePrompt
+  }
+
+  // Sanitize: cap memory length to avoid token abuse
+  const safeMemory = memoryContext.slice(0, 6000).trim()
+
+  return `${basePrompt}
+
+---
+
+## Your Memory of Previous Conversations
+
+You have access to summaries of recent past conversations with this user. Use this context naturally — refer to it when relevant, build on topics already discussed, and avoid re-explaining things already covered. Do NOT explicitly say "According to our previous conversation…" every time; just use the knowledge naturally as a good assistant would.
+
+${safeMemory}`
 }
 
 export { VALID_DOMAIN_IDS }
+

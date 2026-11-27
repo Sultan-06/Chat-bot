@@ -104,7 +104,7 @@ app.get('/api/health', (_req, res) => {
 // ─── Chat endpoint ────────────────────────────────────────────────
 app.post('/api/chat', chatLimiter, async (req, res) => {
   // ── Validate payload ──────────────────────────────────────────
-  const { messages, domainId, languageCode } = req.body
+  const { messages, domainId, languageCode, memoryContext } = req.body
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages must be a non-empty array.' })
@@ -143,7 +143,14 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
   // ── Build messages with system prompt ────────────────────────
   const safeDomainId = VALID_DOMAIN_IDS.includes(domainId) ? domainId : 'general'
-  const systemPrompt = getSystemPrompt(safeDomainId, languageCode || 'en')
+
+  // Validate & sanitize memoryContext: must be a plain string, max 6000 chars
+  const safeMemory =
+    typeof memoryContext === 'string' && memoryContext.trim().length > 0
+      ? memoryContext.trim().slice(0, 6000)
+      : null
+
+  const systemPrompt = getSystemPrompt(safeDomainId, languageCode || 'en', safeMemory)
 
   const apiMessages = [
     { role: 'system', content: systemPrompt },
