@@ -22,14 +22,23 @@ export default function SettingsModal({
     if (!open) return
     let cancelled = false
     const controller = new AbortController()
-    // Use setState inside async callback (not synchronously in the effect)
-    fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal })
+    const timer = setTimeout(() => controller.abort(), 45_000)
+
+    Promise.resolve().then(() => {
+      if (!cancelled) setHealthLoading(true)
+    })
+
+    fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal, cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => { if (!cancelled) setHealth(d) })
       .catch(() => { if (!cancelled) setHealth(null) })
-      .finally(() => { if (!cancelled) setHealthLoading(false) })
+      .finally(() => {
+        clearTimeout(timer)
+        if (!cancelled) setHealthLoading(false)
+      })
     return () => {
       cancelled = true
+      clearTimeout(timer)
       controller.abort()
     }
   }, [open])

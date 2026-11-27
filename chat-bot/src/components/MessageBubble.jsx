@@ -51,6 +51,7 @@ const markdownComponents = {
 
 export default function MessageBubble({ message, isRtl }) {
   const isUser = message.role === 'user'
+  if (!isUser && !message.content) return null
   const dir = isRtl ? 'rtl' : 'ltr'
 
   if (isUser) {

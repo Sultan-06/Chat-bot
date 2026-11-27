@@ -11,6 +11,7 @@ import { exportTranscript } from './utils/exportTranscript'
 import { getLanguageByCode } from './utils/languages'
 import { getDomainById } from './utils/domains'
 import { buildMemoryContext } from './utils/memory'
+import { API_BASE_URL } from './config/api'
 
 // Persist helpers
 function loadPref(key, fallback) {
@@ -75,16 +76,23 @@ export default function App() {
     deleteSession,
     addMessage,
     updateLastAssistantMessage,
+    removeLastEmptyAssistant,
     clearSession,
   } = useChatSessions(domainId)
 
+  // Quietly wake Render free-tier backend on initial page load
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(`${API_BASE_URL}/health`, { cache: 'no-store', signal: controller.signal }).catch(() => {})
+    return () => controller.abort()
+  }, [])
+
   // Streaming state
   const streamingContentRef = useRef('')
-  const [isStreaming, setIsStreaming] = useState(false)
   const activeSessionIdRef = useRef(activeId)
   useEffect(() => { activeSessionIdRef.current = activeId }, [activeId])
 
-  const { send, stop } = useChatStream({
+  const { isStreaming, isWaking, send, stop } = useChatStream({
     onToken: useCallback((token) => {
       streamingContentRef.current += token
       updateLastAssistantMessage(activeSessionIdRef.current, streamingContentRef.current)
@@ -92,16 +100,14 @@ export default function App() {
 
     onDone: useCallback(() => {
       streamingContentRef.current = ''
-      setIsStreaming(false)
-    }, []),
+      removeLastEmptyAssistant(activeSessionIdRef.current)
+    }, [removeLastEmptyAssistant]),
 
     onError: useCallback((errMsg) => {
       setApiError(errMsg)
       streamingContentRef.current = ''
-      setIsStreaming(false)
-      // Remove empty placeholder assistant message if error on first token
-      // (handled gracefully since it'll just be empty content)
-    }, []),
+      removeLastEmptyAssistant(activeSessionIdRef.current)
+    }, [removeLastEmptyAssistant]),
   })
 
   const handleSend = useCallback(async (text) => {
@@ -124,7 +130,6 @@ export default function App() {
       timestamp: Date.now(),
     }
     addMessage(activeId, assistantMsg)
-    setIsStreaming(true)
     streamingContentRef.current = ''
 
     // Build messages array for API (last 30 messages, strip system roles)
@@ -230,6 +235,7 @@ export default function App() {
         <MessageList
           messages={activeSession?.messages ?? []}
           isStreaming={isStreaming}
+          isWaking={isWaking}
           domainId={domainId}
           isRtl={isRtl}
           onStarterClick={handleStarterClick}

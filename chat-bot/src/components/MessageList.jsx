@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import MessageBubble from './MessageBubble'
 import { getDomainById } from '../utils/domains'
 
-function TypingIndicator() {
+function TypingIndicator({ isWaking }) {
   return (
     <div className="flex justify-start mb-6">
       <div className="flex flex-col gap-1 max-w-[80%]">
@@ -12,10 +12,15 @@ function TypingIndicator() {
           </div>
           <span className="text-xs font-medium text-[#6E6A63] dark:text-[#9b9690]">Aura AI</span>
         </div>
-        <div className="bg-white dark:bg-[#1e1e1c] border border-[#E6E2D8] dark:border-[#2a2825] rounded-2xl px-4 py-3 flex items-center gap-1">
+        <div className="bg-white dark:bg-[#1e1e1c] border border-[#E6E2D8] dark:border-[#2a2825] rounded-2xl px-4 py-3 flex items-center gap-2">
           <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[#6E6A63] dark:bg-[#9b9690]" />
           <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[#6E6A63] dark:bg-[#9b9690]" />
           <span className="typing-dot w-1.5 h-1.5 rounded-full bg-[#6E6A63] dark:bg-[#9b9690]" />
+          {isWaking && (
+            <span className="ml-1 text-xs text-[#6E6A63] dark:text-[#9b9690]">
+              Waking up AI server — first response may take ~30s…
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -53,6 +58,7 @@ function EmptyState({ domainId, onStarterClick }) {
 export default function MessageList({
   messages,
   isStreaming,
+  isWaking,
   domainId,
   isRtl,
   onStarterClick,
@@ -79,7 +85,7 @@ export default function MessageList({
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} isRtl={isRtl} />
         ))}
-        {isStreaming && <TypingIndicator />}
+        {isStreaming && <TypingIndicator isWaking={isWaking} />}
         <div ref={bottomRef} />
       </div>
     </div>

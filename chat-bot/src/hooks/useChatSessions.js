@@ -120,6 +120,17 @@ export function useChatSessions(initialDomainId = 'general') {
     )
   }, [])
 
+  const removeLastEmptyAssistant = useCallback((sessionId) => {
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== sessionId || s.messages.length === 0) return s
+        const last = s.messages[s.messages.length - 1]
+        if (last.role !== 'assistant' || last.content.trim().length > 0) return s
+        return { ...s, messages: s.messages.slice(0, -1), updatedAt: Date.now() }
+      })
+    )
+  }, [])
+
   const clearSession = useCallback((sessionId) => {
     setSessions((prev) =>
       prev.map((s) =>
@@ -139,6 +150,7 @@ export function useChatSessions(initialDomainId = 'general') {
     deleteSession,
     addMessage,
     updateLastAssistantMessage,
+    removeLastEmptyAssistant,
     clearSession,
   }
 }

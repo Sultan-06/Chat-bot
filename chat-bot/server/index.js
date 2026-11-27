@@ -35,6 +35,18 @@ const allowedOrigins = new Set([
   ...FRONTEND_URL.split(',').map(normalizeOrigin).filter(Boolean),
 ])
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true
+  const normalized = normalizeOrigin(origin)
+  if (allowedOrigins.has(normalized)) return true
+  try {
+    const { hostname, protocol } = new URL(normalized)
+    return protocol === 'http:' && (hostname === 'localhost' || hostname === '127.0.0.1')
+  } catch {
+    return false
+  }
+}
+
 // ─── OpenAI client ───────────────────────────────────────────────
 const openai = new OpenAI({
   apiKey: AI_API_KEY || 'placeholder', // SDK requires non-empty key string
@@ -62,7 +74,7 @@ app.use(
 const corsOptions = {
   origin: (origin, cb) => {
     // Allow requests with no origin (direct browser visits, curl, health checks) and allowed origins
-    if (!origin || allowedOrigins.has(normalizeOrigin(origin))) {
+    if (isAllowedOrigin(origin)) {
       return cb(null, true)
     }
     return cb(null, false)
@@ -76,7 +88,7 @@ app.use(cors(corsOptions))
 app.options('*', cors(corsOptions))
 
 // Body parsing with size limit
-app.use(express.json({ limit: '100kb' }))
+app.use(express.json({ limit: '250kb' }))
 
 // ─── Rate limiting ────────────────────────────────────────────────
 const chatLimiter = rateLimit({
