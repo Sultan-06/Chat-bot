@@ -27,7 +27,7 @@ function TypingIndicator({ isWaking }) {
   )
 }
 
-function EmptyState({ domainId, onStarterClick }) {
+function EmptyState({ domainId, onStarterClick, memoryEnabled, memoryCount }) {
   const domain = getDomainById(domainId)
   return (
     <div className="flex flex-col items-center justify-center flex-1 py-16 px-4 text-center">
@@ -37,9 +37,17 @@ function EmptyState({ domainId, onStarterClick }) {
       <h2 className="text-xl font-semibold text-[#1E1D1B] dark:text-[#E8E4DA] mb-2">
         Hello! How can I help you today?
       </h2>
-      <p className="text-sm text-[#6E6A63] dark:text-[#9b9690] max-w-sm mb-8">
+      <p className="text-sm text-[#6E6A63] dark:text-[#9b9690] max-w-sm mb-4">
         I&apos;m Aura AI — your intelligent assistant. Ask me anything or choose a suggestion below.
       </p>
+      {memoryEnabled && memoryCount > 0 ? (
+        <p className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-[#EFECE4] dark:bg-[#2a2825] text-[#6E6A63] dark:text-[#9b9690] border border-[#E8E4DA] dark:border-[#3a3732] mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+          Remembering context from {memoryCount} previous {memoryCount === 1 ? 'chat' : 'chats'}
+        </p>
+      ) : (
+        <div className="mb-4" />
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
         {domain.starters.map((prompt) => (
           <button
@@ -62,6 +70,8 @@ export default function MessageList({
   domainId,
   isRtl,
   onStarterClick,
+  memoryEnabled,
+  memoryCount,
 }) {
   const bottomRef = useRef(null)
 
@@ -73,7 +83,12 @@ export default function MessageList({
     return (
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 h-full flex flex-col">
-          <EmptyState domainId={domainId} onStarterClick={onStarterClick} />
+          <EmptyState
+            domainId={domainId}
+            onStarterClick={onStarterClick}
+            memoryEnabled={memoryEnabled}
+            memoryCount={memoryCount}
+          />
         </div>
       </div>
     )

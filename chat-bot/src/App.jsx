@@ -10,7 +10,7 @@ import { useChatStream } from './hooks/useChatStream'
 import { exportTranscript } from './utils/exportTranscript'
 import { getLanguageByCode } from './utils/languages'
 import { getDomainById } from './utils/domains'
-import { buildMemoryContext } from './utils/memory'
+import { buildMemoryContext, countMemorySessions } from './utils/memory'
 import { API_BASE_URL } from './config/api'
 
 // Persist helpers
@@ -50,6 +50,13 @@ export default function App() {
   const handleDomainChange = useCallback((id) => {
     setDomainId(id)
     savePref('aura-domain', id)
+  }, [])
+
+  // Cross-chat memory toggle (on by default)
+  const [memoryEnabled, setMemoryEnabled] = useState(() => loadPref('aura-memory', 'true') !== 'false')
+  const handleMemoryChange = useCallback((enabled) => {
+    setMemoryEnabled(enabled)
+    savePref('aura-memory', enabled ? 'true' : 'false')
   }, [])
 
   // RTL
@@ -139,8 +146,8 @@ export default function App() {
       .slice(-30)
       .map((m) => ({ role: m.role, content: m.content }))
 
-    // Build cross-chat memory from previous sessions
-    const memoryContext = buildMemoryContext(sessions, activeId)
+    // Build cross-chat memory from previous sessions (if enabled)
+    const memoryContext = memoryEnabled ? buildMemoryContext(sessions, activeId) : null
 
     await send({
       messages: apiMessages,
@@ -148,7 +155,7 @@ export default function App() {
       languageCode,
       memoryContext,
     })
-  }, [isStreaming, activeId, activeSession, sessions, addMessage, send, domainId, languageCode])
+  }, [isStreaming, activeId, activeSession, sessions, addMessage, send, domainId, languageCode, memoryEnabled])
 
   const handleStop = useCallback(() => {
     stop()
@@ -179,6 +186,8 @@ export default function App() {
   const handleStarterClick = useCallback((prompt) => {
     handleSend(prompt)
   }, [handleSend])
+
+  const memoryCount = countMemorySessions(sessions, activeId)
 
   return (
     <div
@@ -239,6 +248,8 @@ export default function App() {
           domainId={domainId}
           isRtl={isRtl}
           onStarterClick={handleStarterClick}
+          memoryEnabled={memoryEnabled}
+          memoryCount={memoryCount}
         />
 
         {/* Input bar */}
@@ -265,6 +276,9 @@ export default function App() {
         onLanguageChange={handleLanguageChange}
         domainId={domainId}
         onDomainChange={handleDomainChange}
+        memoryEnabled={memoryEnabled}
+        onMemoryChange={handleMemoryChange}
+        memoryCount={memoryCount}
       />
 
       {/* Confirm clear modal */}

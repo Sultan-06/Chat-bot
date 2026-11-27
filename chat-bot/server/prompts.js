@@ -89,7 +89,10 @@ export function getSystemPrompt(domainId, languageCode, memoryContext) {
 
 ## Your Memory of Previous Conversations
 
-You have access to summaries of recent past conversations with this user. Use this context naturally — refer to it when relevant, build on topics already discussed, and avoid re-explaining things already covered. Do NOT explicitly say "According to our previous conversation…" every time; just use the knowledge naturally as a good assistant would.
+You have direct access to the user's recent previous chats listed below, ordered from **Previous Chat 1 (Most Recent)** to older chats.
+- Use this context naturally to remember the user's name, preferences, ongoing projects, and prior answers.
+- If the user asks what you talked about in the previous chat (or asks to continue from an earlier chat), answer directly and accurately using **Previous Chat 1 (Most Recent)** (or the relevant chat below).
+- Never claim that you cannot see or remember previous chats when conversation history is provided below.
 
 ${safeMemory}`
 }

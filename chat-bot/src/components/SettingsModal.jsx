@@ -13,6 +13,9 @@ export default function SettingsModal({
   onLanguageChange,
   domainId,
   onDomainChange,
+  memoryEnabled,
+  onMemoryChange,
+  memoryCount,
 }) {
   const dialogRef = useRef(null)
   const [health, setHealth] = useState(null)
@@ -161,6 +164,44 @@ export default function SettingsModal({
                   </div>
                 </button>
               ))}
+            </div>
+          </section>
+
+          {/* Cross-chat memory */}
+          <section>
+            <label className="block text-xs font-semibold text-[#6E6A63] dark:text-[#9b9690] uppercase tracking-wider mb-2">
+              Cross-Chat Memory
+            </label>
+            <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-[#E8E4DA] dark:border-[#2a2825] bg-[#FAF9F5] dark:bg-[#252320]">
+              <div>
+                <div className="text-xs font-medium text-[#1E1D1B] dark:text-[#E8E4DA]">
+                  Remember previous chats
+                </div>
+                <div className="text-xs text-[#6E6A63] dark:text-[#9b9690]">
+                  {memoryEnabled
+                    ? `Active (${memoryCount} past ${memoryCount === 1 ? 'chat' : 'chats'} in memory)`
+                    : 'Disabled — new chats start without past context'}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={memoryEnabled}
+                onClick={() => onMemoryChange(!memoryEnabled)}
+                className={[
+                  'relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors',
+                  memoryEnabled
+                    ? 'bg-[#1E1D1B] dark:bg-[#E8E4DA]'
+                    : 'bg-[#D6D1C6] dark:bg-[#3a3732]',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-[#1E1D1B] transition-transform',
+                    memoryEnabled ? 'translate-x-4.5' : 'translate-x-1',
+                  ].join(' ')}
+                />
+              </button>
             </div>
           </section>
 
